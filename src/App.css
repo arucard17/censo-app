@@ -1,0 +1,257 @@
+:root {
+  --color-bg: #f4f7f5;
+  --color-surface: #ffffff;
+  --color-primary: #1a5f4a;
+  --color-primary-hover: #144a3a;
+  --color-text: #1a2420;
+  --color-muted: #5c6b64;
+  --color-border: #d4e0da;
+  --color-pending: #b45309;
+  --color-synced: #15803d;
+  --radius: 10px;
+  --shadow: 0 2px 12px rgb(26 36 32 / 8%);
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem 1rem 2rem;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.app-header h1 {
+  margin: 0.15rem 0;
+  font-size: 1.75rem;
+  color: var(--color-primary);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  color: var(--color-muted);
+}
+
+.network-banner {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.muted {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.sync-status {
+  margin: 0.5rem 0 0;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.list-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.registro-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.registro-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  box-shadow: var(--shadow);
+}
+
+.registro-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.registro-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.badge-synced {
+  background: #dcfce7;
+  color: var(--color-synced);
+}
+
+.badge-pending {
+  background: #ffedd5;
+  color: var(--color-pending);
+}
+
+.sync-error {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: #b91c1c;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--color-muted);
+}
+
+.btn {
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.55rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.registro-form fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem 1rem;
+  background: var(--color-surface);
+}
+
+.registro-form legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.65rem;
+}
+
+.field span {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.field input,
+.field select {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.65rem;
+}
+
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.form-error {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius);
+  margin: 0 0 1rem;
+}
+
+.app-footer {
+  margin-top: 1.5rem;
+}
