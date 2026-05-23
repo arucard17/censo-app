@@ -8,12 +8,18 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: [
+        'favicon.svg',
+        'favicon.ico',
+        'favicon-16.png',
+        'favicon-32.png',
+        'apple-touch-icon.png',
+      ],
       manifest: {
         name: 'Censo Vereda Sonsito',
-        short_name: 'censo Sonsito',
+        short_name: 'Censo Vereda Sonsito',
         description: 'Caracterización de la comunidad - Vereda Sonsito',
-        theme_color: '#1a5f4a',
+        theme_color: '#76933c',
         background_color: '#f4f7f5',
         display: 'standalone',
         start_url: '/censo-app/',
