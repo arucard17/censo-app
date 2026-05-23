@@ -32,7 +32,6 @@ function App() {
   useEffect(() => {
     if (window.location.hash === FORM_HASH && history.state?.view !== 'form') {
       history.replaceState({ view: 'form' }, '', FORM_HASH)
-      setView('form')
     }
   }, [])
 
