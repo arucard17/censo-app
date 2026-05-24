@@ -48,9 +48,11 @@ Las reglas permiten lectura abierta y creación validada; no permiten actualizar
 
 ## GitHub Pages
 
-1. En el repositorio: **Settings → Pages → Build and deployment → Source: GitHub Actions** (no uses «Deploy from a branch» ni la carpeta raíz del repo).
-2. Configura los **secrets** del repositorio con los mismos nombres que en `.env.example` (`VITE_FIREBASE_*`).
-3. Cada push a `main` ejecuta [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), que publica solo el contenido de `dist/` (build de Vite).
+1. En el repositorio: **Settings → Pages → Build and deployment**.
+   - **GitHub Actions** (recomendado): el workflow publica el build desde la carpeta `docs/`.
+   - O **Deploy from a branch** → rama `main` → carpeta **`/docs`** (mismo directorio que genera Vite).
+2. Configura los **secrets** del repositorio con los mismos nombres que en `.env.example` (`VITE_FIREBASE_*`) si usas Actions.
+3. `npm run build` escribe la salida en **`docs/`** (no en `dist/`). Con Actions, cada push a `main` ejecuta [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
 ## Instalación como PWA
 
