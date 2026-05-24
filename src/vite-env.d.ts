@@ -13,3 +13,10 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+/** Chromium install prompt; see MDN BeforeInstallPromptEvent */
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[]
+  prompt(): Promise<{ outcome: 'accepted' | 'dismissed' }>
+  readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}

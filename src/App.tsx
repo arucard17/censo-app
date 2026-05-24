@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { insertRegistro } from './lib/db'
 import { syncOneRegistro } from './lib/sync'
+import { InstallPrompt } from './components/InstallPrompt'
 import { NetworkBanner } from './components/NetworkBanner'
 import { RegistroForm } from './components/RegistroForm'
 import { RegistroList } from './components/RegistroList'
@@ -73,6 +74,7 @@ function App() {
       </header>
 
       <NetworkBanner online={online} />
+      <InstallPrompt />
 
       <main>
         {view === 'list' ? (
