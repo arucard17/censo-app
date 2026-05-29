@@ -7,6 +7,7 @@ import { RegistroForm } from './components/RegistroForm'
 import { RegistroList } from './components/RegistroList'
 import { useRegistros } from './hooks/useRegistros'
 import type { RegistroPayload } from './types/registro'
+import { APP_VERSION } from './lib/version'
 import './App.css'
 
 type View = 'list' | 'form'
@@ -92,7 +93,7 @@ function App() {
       </main>
 
       {view === 'list' && registros.some((r) => !r.synced) && (
-        <footer className="app-footer">
+        <footer className="app-footer app-footer-actions">
           <button
             type="button"
             className="btn btn-secondary btn-block"
@@ -103,6 +104,10 @@ function App() {
           </button>
         </footer>
       )}
+
+      <footer className="app-footer app-version-footer">
+        <p className="muted">Versión {APP_VERSION}</p>
+      </footer>
     </div>
   )
 }
