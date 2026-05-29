@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import {
   ACUEDUCTO_ACUERDO,
   ACUEDUCTO_ASPECTOS_MEJORAR,
@@ -21,6 +21,15 @@ import {
   type RegistroPayload,
 } from '../types/registro'
 import { captureGpsPosition } from '../lib/geolocation'
+import {
+  ChipMultiSelect,
+  ChoiceGroup,
+  NumberStepper,
+  RatingScale,
+  TextField,
+} from './form/FormControls'
+
+const ESTRATO_OPTIONS = ESTRATOS.map(String)
 
 interface RegistroFormProps {
   onSubmit: (payload: RegistroPayload) => Promise<void>
@@ -55,69 +64,11 @@ function CollapsibleSection({
   )
 }
 
-function NumberField({
-  label,
-  name,
-  value,
-  onChange,
-}: {
-  label: string
-  name: keyof RegistroPayload
-  value: number
-  onChange: (name: keyof RegistroPayload, value: number) => void
-}) {
-  return (
-    <label className="field">
-      <span>{label}</span>
-      <input
-        type="number"
-        min={0}
-        step={1}
-        name={name}
-        value={value}
-        onChange={(e) => onChange(name, parseInt(e.target.value, 10) || 0)}
-      />
-    </label>
-  )
-}
-
-function RadioQuestion({
-  legend,
-  name,
-  options,
-  value,
-  onChange,
-}: {
-  legend: string
-  name: string
-  options: readonly string[]
-  value: string
-  onChange: (value: string) => void
-}) {
-  return (
-    <fieldset className="survey-question">
-      <legend>{legend}</legend>
-      <div className="radio-group">
-        {options.map((opt) => (
-          <label key={opt} className="radio">
-            <input
-              type="radio"
-              name={name}
-              checked={value === opt}
-              onChange={() => onChange(opt)}
-            />
-            {opt}
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  )
-}
-
 export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
   const [data, setData] = useState<RegistroPayload>(emptyRegistroPayload)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const errorRef = useRef<HTMLParagraphElement>(null)
 
   const setNum = (name: keyof RegistroPayload, value: number) => {
     setData((d) => ({ ...d, [name]: value }))
@@ -145,6 +96,9 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
     const validation = validateRegistro(data)
     if (validation) {
       setError(validation)
+      requestAnimationFrame(() => {
+        errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
       return
     }
     setError(null)
@@ -164,6 +118,9 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar')
+      requestAnimationFrame(() => {
+        errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
     } finally {
       setSaving(false)
     }
@@ -171,354 +128,297 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
 
   return (
     <form className="registro-form" onSubmit={(e) => void handleSubmit(e)}>
-      {error && <p className="form-error">{error}</p>}
+      {error && (
+        <p ref={errorRef} className="form-error" role="alert">
+          {error}
+        </p>
+      )}
 
       <CollapsibleSection title="Información Vivienda">
         <fieldset>
           <legend>Identificación</legend>
-          <label className="field">
-            <span>Nombre *</span>
-            <input
-              required
-              value={data.nombre}
-              onChange={(e) => setData({ ...data, nombre: e.target.value })}
-            />
-          </label>
-          <label className="field">
-            <span>Correo electrónico</span>
-            <input
-              type="email"
-              value={data.email}
-              onChange={(e) => setData({ ...data, email: e.target.value })}
-            />
-          </label>
-          <label className="field">
-            <span>Número de celular *</span>
-            <input
-              required
-              value={data.celular}
-              onChange={(e) => setData({ ...data, celular: e.target.value })}
-            />
-          </label>
-          <label className="field">
-            <span>Sector</span>
-            <select
-              value={data.sector}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  sector: e.target.value as RegistroPayload['sector'],
-                })
-              }
-            >
-              {SECTORES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>Estrato</span>
-            <select
-              value={data.estrato}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  estrato: Number(e.target.value) as RegistroPayload['estrato'],
-                })
-              }
-            >
-              {ESTRATOS.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </label>
+          <TextField
+            label="Nombre *"
+            required
+            autoComplete="name"
+            enterKeyHint="next"
+            value={data.nombre}
+            onChange={(v) => setData({ ...data, nombre: v })}
+          />
+          <TextField
+            label="Correo electrónico"
+            type="email"
+            autoComplete="email"
+            enterKeyHint="next"
+            value={data.email}
+            onChange={(v) => setData({ ...data, email: v })}
+          />
+          <TextField
+            label="Número de celular *"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            enterKeyHint="next"
+            required
+            value={data.celular}
+            onChange={(v) => setData({ ...data, celular: v })}
+          />
+          <ChoiceGroup
+            legend="Sector"
+            name="sector"
+            options={SECTORES}
+            value={data.sector}
+            onChange={(v) =>
+              setData({ ...data, sector: v as RegistroPayload['sector'] })
+            }
+          />
+          <ChoiceGroup
+            legend="Estrato"
+            name="estrato"
+            options={ESTRATO_OPTIONS}
+            value={String(data.estrato)}
+            onChange={(v) =>
+              setData({
+                ...data,
+                estrato: Number(v) as RegistroPayload['estrato'],
+              })
+            }
+          />
         </fieldset>
 
         <fieldset>
           <legend>Vivienda</legend>
-          <label className="field">
-            <span>Tipo de vivienda</span>
-            <select
-              value={data.tipoVivienda}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  tipoVivienda: e.target
-                    .value as RegistroPayload['tipoVivienda'],
-                })
-              }
-            >
-              {TIPOS_VIVIENDA.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>Dominio vivienda</span>
-            <select
-              value={data.dominioVivienda}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  dominioVivienda: e.target
-                    .value as RegistroPayload['dominioVivienda'],
-                })
-              }
-            >
-              {DOMINIO_VIVIENDA.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </label>
+          <ChoiceGroup
+            legend="Tipo de vivienda"
+            name="tipoVivienda"
+            options={TIPOS_VIVIENDA}
+            value={data.tipoVivienda}
+            onChange={(v) =>
+              setData({
+                ...data,
+                tipoVivienda: v as RegistroPayload['tipoVivienda'],
+              })
+            }
+          />
+          <ChoiceGroup
+            legend="Dominio vivienda"
+            name="dominioVivienda"
+            options={DOMINIO_VIVIENDA}
+            value={data.dominioVivienda}
+            onChange={(v) =>
+              setData({
+                ...data,
+                dominioVivienda: v as RegistroPayload['dominioVivienda'],
+              })
+            }
+          />
         </fieldset>
 
         <fieldset>
           <legend>Servicios públicos</legend>
-          <div className="checkbox-group">
-            {SERVICIOS_PUBLICOS.map((s) => (
-              <label key={s} className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={data.serviciosPublicos.includes(s)}
-                  onChange={() => toggleArray('serviciosPublicos', s)}
-                />
-                {s}
-              </label>
-            ))}
-          </div>
-          <label className="field">
-            <span>Otro (servicios)</span>
-            <input
-              value={data.serviciosPublicosOtro}
-              onChange={(e) =>
-                setData({ ...data, serviciosPublicosOtro: e.target.value })
-              }
-            />
-          </label>
+          <ChipMultiSelect
+            legend="Seleccione los servicios"
+            options={SERVICIOS_PUBLICOS}
+            selected={data.serviciosPublicos}
+            onToggle={(item) => toggleArray('serviciosPublicos', item)}
+          />
+          <TextField
+            label="Otro (servicios)"
+            enterKeyHint="next"
+            value={data.serviciosPublicosOtro}
+            onChange={(v) => setData({ ...data, serviciosPublicosOtro: v })}
+          />
         </fieldset>
 
         <fieldset>
           <legend>Composición del hogar</legend>
-          <label className="field">
-            <span>Arraigo</span>
-            <select
-              value={data.arraigo}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  arraigo: e.target.value as RegistroPayload['arraigo'],
-                })
-              }
-            >
-              {ARRAIGO.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>Etnia</span>
-            <select
-              value={data.etnia}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  etnia: e.target.value as RegistroPayload['etnia'],
-                })
-              }
-            >
-              {ETNIA.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </label>
-          <NumberField
-            label="Núm. personas"
-            name="numPersonas"
-            value={data.numPersonas}
-            onChange={setNum}
+          <ChoiceGroup
+            legend="Arraigo"
+            name="arraigo"
+            options={ARRAIGO}
+            value={data.arraigo}
+            onChange={(v) =>
+              setData({ ...data, arraigo: v as RegistroPayload['arraigo'] })
+            }
           />
-          <NumberField
-            label="Hombres (18-59 A.)"
-            name="hombres1859"
-            value={data.hombres1859}
-            onChange={setNum}
+          <ChoiceGroup
+            legend="Etnia"
+            name="etnia"
+            options={ETNIA}
+            value={data.etnia}
+            onChange={(v) =>
+              setData({ ...data, etnia: v as RegistroPayload['etnia'] })
+            }
           />
-          <NumberField
-            label="Mujer (18-59 A.)"
-            name="mujeres1859"
-            value={data.mujeres1859}
-            onChange={setNum}
-          />
-          <NumberField
-            label="Hombre mayor (60 A.)"
-            name="hombres60"
-            value={data.hombres60}
-            onChange={setNum}
-          />
-          <NumberField
-            label="Mujer mayor (60 A.)"
-            name="mujeres60"
-            value={data.mujeres60}
-            onChange={setNum}
-          />
-          <NumberField label="Niños" name="ninos" value={data.ninos} onChange={setNum} />
-          <NumberField label="Niñas" name="ninas" value={data.ninas} onChange={setNum} />
-          <NumberField
-            label="Discapacitados"
-            name="discapacitados"
-            value={data.discapacitados}
-            onChange={setNum}
-          />
-          <NumberField
-            label="Desplazados"
-            name="desplazados"
-            value={data.desplazados}
-            onChange={setNum}
-          />
-          <NumberField
-            label="Reinsertados"
-            name="reinsertados"
-            value={data.reinsertados}
-            onChange={setNum}
-          />
-          <NumberField label="LGTBI+" name="lgtbi" value={data.lgtbi} onChange={setNum} />
+          <div className="count-grid">
+            <NumberStepper
+              label="Núm. personas"
+              value={data.numPersonas}
+              onChange={(v) => setNum('numPersonas', v)}
+            />
+            <NumberStepper
+              label="Hombres (18-59 A.)"
+              value={data.hombres1859}
+              onChange={(v) => setNum('hombres1859', v)}
+            />
+            <NumberStepper
+              label="Mujer (18-59 A.)"
+              value={data.mujeres1859}
+              onChange={(v) => setNum('mujeres1859', v)}
+            />
+            <NumberStepper
+              label="Hombre mayor (60 A.)"
+              value={data.hombres60}
+              onChange={(v) => setNum('hombres60', v)}
+            />
+            <NumberStepper
+              label="Mujer mayor (60 A.)"
+              value={data.mujeres60}
+              onChange={(v) => setNum('mujeres60', v)}
+            />
+            <NumberStepper
+              label="Niños"
+              value={data.ninos}
+              onChange={(v) => setNum('ninos', v)}
+            />
+            <NumberStepper
+              label="Niñas"
+              value={data.ninas}
+              onChange={(v) => setNum('ninas', v)}
+            />
+            <NumberStepper
+              label="Discapacitados"
+              value={data.discapacitados}
+              onChange={(v) => setNum('discapacitados', v)}
+            />
+            <NumberStepper
+              label="Desplazados"
+              value={data.desplazados}
+              onChange={(v) => setNum('desplazados', v)}
+            />
+            <NumberStepper
+              label="Reinsertados"
+              value={data.reinsertados}
+              onChange={(v) => setNum('reinsertados', v)}
+            />
+            <NumberStepper
+              label="LGTBI+"
+              value={data.lgtbi}
+              onChange={(v) => setNum('lgtbi', v)}
+            />
+          </div>
         </fieldset>
 
         <fieldset>
           <legend>Personas que estudian</legend>
-          <NumberField
-            label="En la Escuela"
-            name="estudianEscuela"
-            value={data.estudianEscuela}
-            onChange={setNum}
-          />
-          <NumberField
-            label="En el Colegio"
-            name="estudianColegio"
-            value={data.estudianColegio}
-            onChange={setNum}
-          />
-          <NumberField
-            label="En la Universidad"
-            name="estudianUniversidad"
-            value={data.estudianUniversidad}
-            onChange={setNum}
-          />
+          <div className="count-grid">
+            <NumberStepper
+              label="En la Escuela"
+              value={data.estudianEscuela}
+              onChange={(v) => setNum('estudianEscuela', v)}
+            />
+            <NumberStepper
+              label="En el Colegio"
+              value={data.estudianColegio}
+              onChange={(v) => setNum('estudianColegio', v)}
+            />
+            <NumberStepper
+              label="En la Universidad"
+              value={data.estudianUniversidad}
+              onChange={(v) => setNum('estudianUniversidad', v)}
+            />
+          </div>
         </fieldset>
 
         <fieldset>
           <legend>Personas que trabajan</legend>
-          <NumberField
-            label="En la Vereda"
-            name="trabajanVereda"
-            value={data.trabajanVereda}
-            onChange={setNum}
-          />
-          <NumberField
-            label="En Buga"
-            name="trabajanBuga"
-            value={data.trabajanBuga}
-            onChange={setNum}
-          />
-          <NumberField
-            label="En Otro"
-            name="trabajanOtro"
-            value={data.trabajanOtro}
-            onChange={setNum}
-          />
+          <div className="count-grid">
+            <NumberStepper
+              label="En la Vereda"
+              value={data.trabajanVereda}
+              onChange={(v) => setNum('trabajanVereda', v)}
+            />
+            <NumberStepper
+              label="En Buga"
+              value={data.trabajanBuga}
+              onChange={(v) => setNum('trabajanBuga', v)}
+            />
+            <NumberStepper
+              label="En Otro"
+              value={data.trabajanOtro}
+              onChange={(v) => setNum('trabajanOtro', v)}
+            />
+          </div>
         </fieldset>
 
         <fieldset>
           <legend>Movilidad</legend>
-          <label className="field">
-            <span>Desplazamiento</span>
-            <select
-              value={data.desplazamiento}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  desplazamiento: e.target
-                    .value as RegistroPayload['desplazamiento'],
-                })
-              }
-            >
-              {DESPLAZAMIENTO.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </label>
+          <ChoiceGroup
+            legend="Desplazamiento"
+            name="desplazamiento"
+            options={DESPLAZAMIENTO}
+            value={data.desplazamiento}
+            onChange={(v) =>
+              setData({
+                ...data,
+                desplazamiento: v as RegistroPayload['desplazamiento'],
+              })
+            }
+          />
         </fieldset>
 
         <fieldset>
           <legend>Necesidades en la comunidad</legend>
-          <div className="checkbox-group">
-            {NECESIDADES.map((n) => (
-              <label key={n} className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={data.necesidades.includes(n)}
-                  onChange={() => toggleArray('necesidades', n)}
-                />
-                {n}
-              </label>
-            ))}
-          </div>
-          <label className="field">
-            <span>Otra necesidad</span>
-            <input
-              value={data.necesidadesOtro}
-              onChange={(e) =>
-                setData({ ...data, necesidadesOtro: e.target.value })
-              }
-            />
-          </label>
+          <ChipMultiSelect
+            legend="Necesidades"
+            options={NECESIDADES}
+            selected={data.necesidades}
+            onToggle={(item) => toggleArray('necesidades', item)}
+          />
+          <TextField
+            label="Otra necesidad"
+            enterKeyHint="done"
+            value={data.necesidadesOtro}
+            onChange={(v) => setData({ ...data, necesidadesOtro: v })}
+          />
         </fieldset>
       </CollapsibleSection>
 
-      <CollapsibleSection title="Información Acueducto" defaultOpen>
-        <RadioQuestion
+      <CollapsibleSection title="Información Acueducto" defaultOpen={false}>
+        <ChoiceGroup
+          clearable
           legend="1. ¿Qué tan satisfecho se encuentra con el servicio de suministro de agua que presta actualmente el Acueducto de Sonsito?"
           name="acueductoSatisfaccionServicio"
           options={ACUEDUCTO_SATISFACCION}
           value={data.acueductoSatisfaccionServicio}
           onChange={(v) => setAcueductoRadio('acueductoSatisfaccionServicio', v)}
         />
-        <RadioQuestion
+        <ChoiceGroup
+          clearable
           legend="2. ¿Cómo califica la calidad del agua suministrada para consumo doméstico?"
           name="acueductoCalidadAgua"
           options={ACUEDUCTO_CALIFICACION}
           value={data.acueductoCalidadAgua}
           onChange={(v) => setAcueductoRadio('acueductoCalidadAgua', v)}
         />
-        <RadioQuestion
+        <ChoiceGroup
+          clearable
           legend="3. ¿Cómo califica la atención recibida cuando presenta solicitudes, inquietudes o reportes al acueducto?"
           name="acueductoAtencion"
           options={ACUEDUCTO_CALIFICACION}
           value={data.acueductoAtencion}
           onChange={(v) => setAcueductoRadio('acueductoAtencion', v)}
         />
-        <RadioQuestion
+        <ChoiceGroup
+          clearable
           legend="4. ¿Considera que la Junta Directiva y la Administración del Acueducto mantienen informada a la comunidad sobre las actividades, proyectos y gestiones realizadas?"
           name="acueductoInformacionComunidad"
           options={ACUEDUCTO_FRECUENCIA}
           value={data.acueductoInformacionComunidad}
           onChange={(v) => setAcueductoRadio('acueductoInformacionComunidad', v)}
         />
-        <RadioQuestion
+        <ChoiceGroup
+          clearable
           legend="5. ¿Cómo califica las gestiones realizadas para el mejoramiento de la infraestructura del acueducto y de las vías de acceso relacionadas con el servicio?"
           name="acueductoGestionesInfraestructura"
           options={ACUEDUCTO_CALIFICACION}
@@ -527,7 +427,8 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
             setAcueductoRadio('acueductoGestionesInfraestructura', v)
           }
         />
-        <RadioQuestion
+        <ChoiceGroup
+          clearable
           legend="6. ¿Qué tan importante considera el proyecto de diseño y modernización del acueducto regional que beneficiará a Sonsito, La Unidad, El Manantial y el Parque Nacional Regional El Vínculo?"
           name="acueductoImportanciaModernizacion"
           options={ACUEDUCTO_IMPORTANCIA}
@@ -536,14 +437,16 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
             setAcueductoRadio('acueductoImportanciaModernizacion', v)
           }
         />
-        <RadioQuestion
+        <ChoiceGroup
+          clearable
           legend="7. ¿Cómo califica la gestión realizada por la Junta Directiva para lograr la formulación y gestión de los diseños de las nuevas redes de alcantarillado ante la Administración Municipal, con el propósito de mejorar el saneamiento básico de la comunidad?"
           name="acueductoGestionAlcantarillado"
           options={ACUEDUCTO_CALIFICACION}
           value={data.acueductoGestionAlcantarillado}
           onChange={(v) => setAcueductoRadio('acueductoGestionAlcantarillado', v)}
         />
-        <RadioQuestion
+        <ChoiceGroup
+          clearable
           legend="8. ¿Considera que los recursos económicos aportados por la comunidad están siendo administrados con transparencia?"
           name="acueductoTransparenciaRecursos"
           options={ACUEDUCTO_ACUERDO}
@@ -551,35 +454,20 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
           onChange={(v) => setAcueductoRadio('acueductoTransparenciaRecursos', v)}
         />
 
-        <fieldset className="survey-question">
-          <legend>
-            9. ¿Qué aspectos considera que deben mejorarse prioritariamente en el
-            Acueducto de Sonsito? (Puede marcar varias opciones)
-          </legend>
-          <div className="checkbox-group">
-            {ACUEDUCTO_ASPECTOS_MEJORAR.map((item) => (
-              <label key={item} className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={data.acueductoAspectosMejorar.includes(item)}
-                  onChange={() => toggleArray('acueductoAspectosMejorar', item)}
-                />
-                {item}
-              </label>
-            ))}
-          </div>
-          <label className="field">
-            <span>Otro</span>
-            <input
-              value={data.acueductoAspectosMejorarOtro}
-              onChange={(e) =>
-                setData({ ...data, acueductoAspectosMejorarOtro: e.target.value })
-              }
-            />
-          </label>
-        </fieldset>
+        <ChipMultiSelect
+          legend="9. ¿Qué aspectos considera que deben mejorarse prioritariamente en el Acueducto de Sonsito? (Puede marcar varias opciones)"
+          options={ACUEDUCTO_ASPECTOS_MEJORAR}
+          selected={data.acueductoAspectosMejorar}
+          onToggle={(item) => toggleArray('acueductoAspectosMejorar', item)}
+        />
+        <TextField
+          label="Otro"
+          value={data.acueductoAspectosMejorarOtro}
+          onChange={(v) => setData({ ...data, acueductoAspectosMejorarOtro: v })}
+        />
 
-        <RadioQuestion
+        <ChoiceGroup
+          clearable
           legend="10. ¿Estaría dispuesto a participar en jornadas comunitarias, reuniones, veedurías ciudadanas o actividades de apoyo al acueducto?"
           name="acueductoParticipacion"
           options={ACUEDUCTO_PARTICIPACION}
@@ -587,51 +475,23 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
           onChange={(v) => setAcueductoRadio('acueductoParticipacion', v)}
         />
 
-        <fieldset className="survey-question">
-          <legend>
-            11. En una escala de 1 a 10, donde 1 es muy malo y 10 es excelente,
-            ¿qué calificación le otorga a la gestión realizada por la Junta Directiva
-            del Acueducto Rural Aguas Sonsito durante el último año?
-          </legend>
-          <label className="field field-inline">
-            <span>Calificación (1–10)</span>
-            <input
-              type="number"
-              min={0}
-              max={10}
-              step={1}
-              placeholder="—"
-              value={data.acueductoCalificacionJunta || ''}
-              onChange={(e) => {
-                const raw = e.target.value
-                setData({
-                  ...data,
-                  acueductoCalificacionJunta: raw === '' ? 0 : parseInt(raw, 10) || 0,
-                })
-              }}
-            />
-          </label>
-        </fieldset>
+        <RatingScale
+          legend="11. En una escala de 1 a 10, donde 1 es muy malo y 10 es excelente, ¿qué calificación le otorga a la gestión realizada por la Junta Directiva del Acueducto Rural Aguas Sonsito durante el último año?"
+          value={data.acueductoCalificacionJunta}
+          onChange={(v) => setData({ ...data, acueductoCalificacionJunta: v })}
+        />
 
-        <fieldset className="survey-question">
-          <legend>
-            12. ¿Qué sugerencias o recomendaciones tiene para mejorar el servicio y
-            la gestión del Acueducto Rural Aguas Sonsito?
-          </legend>
-          <label className="field">
-            <span>Sugerencias</span>
-            <textarea
-              rows={4}
-              value={data.acueductoSugerencias}
-              onChange={(e) =>
-                setData({ ...data, acueductoSugerencias: e.target.value })
-              }
-            />
-          </label>
-        </fieldset>
+        <TextField
+          label="12. Sugerencias o recomendaciones"
+          multiline
+          rows={4}
+          enterKeyHint="done"
+          value={data.acueductoSugerencias}
+          onChange={(v) => setData({ ...data, acueductoSugerencias: v })}
+        />
       </CollapsibleSection>
 
-      <div className="form-actions">
+      <div className="form-actions form-sticky-actions">
         <button type="button" className="btn btn-secondary" onClick={onCancel}>
           Cancelar
         </button>
