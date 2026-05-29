@@ -133,6 +133,10 @@ export interface RegistroPayload {
   ninos: number
   ninas: number
   discapacitados: number
+  discapacidadEnfermedad: string
+  discapacidadTiempo: string
+  discapacidadCuidadorNombre: string
+  discapacidadCuidadorTelefono: string
   desplazados: number
   reinsertados: number
   lgtbi: number
@@ -193,6 +197,10 @@ export function emptyRegistroPayload(): RegistroPayload {
     ninos: 0,
     ninas: 0,
     discapacitados: 0,
+    discapacidadEnfermedad: '',
+    discapacidadTiempo: '',
+    discapacidadCuidadorNombre: '',
+    discapacidadCuidadorTelefono: '',
     desplazados: 0,
     reinsertados: 0,
     lgtbi: 0,
@@ -256,6 +264,20 @@ export function validateRegistro(data: RegistroPayload): string | null {
   const cal = data.acueductoCalificacionJunta
   if (!Number.isInteger(cal) || cal < 0 || cal > 10) {
     return 'La calificación a la Junta Directiva debe estar entre 1 y 10, o dejarse en blanco.'
+  }
+  if (data.discapacitados > 0) {
+    if (!data.discapacidadEnfermedad.trim()) {
+      return 'Indique qué enfermedad o condición tiene la persona con discapacidad.'
+    }
+    if (!data.discapacidadTiempo.trim()) {
+      return 'Indique hace cuánto tiempo.'
+    }
+    if (!data.discapacidadCuidadorNombre.trim()) {
+      return 'Indique el nombre del cuidador.'
+    }
+    if (!data.discapacidadCuidadorTelefono.trim()) {
+      return 'Indique el número de teléfono del cuidador.'
+    }
   }
   return null
 }

@@ -125,6 +125,10 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
         email: data.email.trim(),
         celular: data.celular.trim(),
         acueductoSugerencias: data.acueductoSugerencias.trim(),
+        discapacidadEnfermedad: data.discapacidadEnfermedad.trim(),
+        discapacidadTiempo: data.discapacidadTiempo.trim(),
+        discapacidadCuidadorNombre: data.discapacidadCuidadorNombre.trim(),
+        discapacidadCuidadorTelefono: data.discapacidadCuidadorTelefono.trim(),
         gpsLatitude: gpsReading?.latitude ?? null,
         gpsLongitude: gpsReading?.longitude ?? null,
         gpsAccuracy: gpsReading?.accuracy ?? null,
@@ -310,9 +314,23 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
               onChange={(v) => setNum('ninas', v)}
             />
             <NumberStepper
-              label="Discapacitados"
+              label="Personas en condición de discapacidad"
               value={data.discapacitados}
-              onChange={(v) => setNum('discapacitados', v)}
+              onChange={(v) => {
+                setData((d) => {
+                  const next = { ...d, discapacitados: v }
+                  if (v === 0) {
+                    return {
+                      ...next,
+                      discapacidadEnfermedad: '',
+                      discapacidadTiempo: '',
+                      discapacidadCuidadorNombre: '',
+                      discapacidadCuidadorTelefono: '',
+                    }
+                  }
+                  return next
+                })
+              }}
             />
             <NumberStepper
               label="Desplazados"
@@ -330,6 +348,46 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
               onChange={(v) => setNum('lgtbi', v)}
             />
           </div>
+          {data.discapacitados > 0 && (
+            <div className="discapacidad-fields">
+              <p className="discapacidad-fields-title">
+                Datos de discapacidad ({data.discapacitados}{' '}
+                {data.discapacitados === 1 ? 'persona' : 'personas'})
+              </p>
+              <TextField
+                label="¿Qué enfermedad?"
+                enterKeyHint="next"
+                value={data.discapacidadEnfermedad}
+                onChange={(v) => setData({ ...data, discapacidadEnfermedad: v })}
+              />
+              <TextField
+                label="¿Hace cuánto tiempo?"
+                enterKeyHint="next"
+                value={data.discapacidadTiempo}
+                onChange={(v) => setData({ ...data, discapacidadTiempo: v })}
+              />
+              <TextField
+                label="Nombre del cuidador"
+                autoComplete="name"
+                enterKeyHint="next"
+                value={data.discapacidadCuidadorNombre}
+                onChange={(v) =>
+                  setData({ ...data, discapacidadCuidadorNombre: v })
+                }
+              />
+              <TextField
+                label="Número teléfono del cuidador"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                enterKeyHint="next"
+                value={data.discapacidadCuidadorTelefono}
+                onChange={(v) =>
+                  setData({ ...data, discapacidadCuidadorTelefono: v })
+                }
+              />
+            </div>
+          )}
         </fieldset>
 
         <fieldset>

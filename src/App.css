@@ -339,6 +339,22 @@ body {
   margin-top: 0.5rem;
 }
 
+.discapacidad-fields {
+  grid-column: 1 / -1;
+  margin-top: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.discapacidad-fields-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
 .field-stepper {
   margin-bottom: 0;
 }
