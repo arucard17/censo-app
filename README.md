@@ -60,11 +60,14 @@ En el navegador del celular, abre la URL publicada y usa «Agregar a pantalla de
 
 ## Privacidad
 
+Al guardar, la app intenta obtener la ubicación GPS del dispositivo (requiere permiso del navegador y HTTPS). Si el usuario deniega el permiso o no hay señal, el registro se guarda igual sin coordenadas.
+
 Los datos personales se almacenan en Firestore con reglas de solo creación desde la app. El acceso de lectura está abierto según la configuración acordada; valora reforzar autenticación si el censo crece.
 
 ## Estructura
 
 - `src/lib/db.ts` — IndexedDB (cola local y estado sincronizado)
+- `src/lib/geolocation.ts` — captura de GPS al guardar un registro
 - `src/lib/sync.ts` — envío a Firestore
 - `src/components/RegistroForm.tsx` — formulario del censo
 - `firestore.rules` — validación en servidor

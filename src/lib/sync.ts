@@ -1,5 +1,6 @@
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import type { LocalRegistro } from '../types/registro'
+import { emptyRegistroPayload } from '../types/registro'
 import { db } from './firebase'
 import {
   listPendingRegistros,
@@ -8,10 +9,11 @@ import {
 } from './db'
 
 function toFirestoreDoc(registro: LocalRegistro) {
-  const serviciosPublicosOtro = registro.serviciosPublicosOtro
-  const necesidadesOtro = registro.necesidadesOtro
-  const serviciosPublicos = registro.serviciosPublicos
-  const necesidades = registro.necesidades
+  const merged = { ...emptyRegistroPayload(), ...registro }
+  const serviciosPublicosOtro = merged.serviciosPublicosOtro
+  const necesidadesOtro = merged.necesidadesOtro
+  const serviciosPublicos = merged.serviciosPublicos
+  const necesidades = merged.necesidades
   const {
     nombre,
     email,
@@ -40,7 +42,7 @@ function toFirestoreDoc(registro: LocalRegistro) {
     trabajanBuga,
     trabajanOtro,
     desplazamiento,
-  } = registro
+  } = merged
   const rest = {
     nombre,
     email,
@@ -81,14 +83,49 @@ function toFirestoreDoc(registro: LocalRegistro) {
     necesidadesList.push(`Otro: ${necesidadesOtro.trim()}`)
   }
 
-  return {
+  const acueductoAspectos = [...merged.acueductoAspectosMejorar]
+  if (merged.acueductoAspectosMejorarOtro.trim()) {
+    acueductoAspectos.push(`Otro: ${merged.acueductoAspectosMejorarOtro.trim()}`)
+  }
+
+  const doc: Record<string, unknown> = {
     ...rest,
     serviciosPublicos: servicios,
     necesidades: necesidadesList,
-    localId: registro.id,
+    acueductoSatisfaccionServicio: merged.acueductoSatisfaccionServicio,
+    acueductoCalidadAgua: merged.acueductoCalidadAgua,
+    acueductoAtencion: merged.acueductoAtencion,
+    acueductoInformacionComunidad: merged.acueductoInformacionComunidad,
+    acueductoGestionesInfraestructura: merged.acueductoGestionesInfraestructura,
+    acueductoImportanciaModernizacion: merged.acueductoImportanciaModernizacion,
+    acueductoGestionAlcantarillado: merged.acueductoGestionAlcantarillado,
+    acueductoTransparenciaRecursos: merged.acueductoTransparenciaRecursos,
+    acueductoAspectosMejorar: acueductoAspectos,
+    acueductoParticipacion: merged.acueductoParticipacion,
+    acueductoCalificacionJunta: merged.acueductoCalificacionJunta,
+    acueductoSugerencias: merged.acueductoSugerencias.trim(),
+    localId: merged.id,
     source: 'pwa-sonsito',
     createdAt: serverTimestamp(),
   }
+
+  if (
+    merged.gpsLatitude != null &&
+    merged.gpsLongitude != null &&
+    Number.isFinite(merged.gpsLatitude) &&
+    Number.isFinite(merged.gpsLongitude)
+  ) {
+    doc.gpsLatitude = merged.gpsLatitude
+    doc.gpsLongitude = merged.gpsLongitude
+    if (merged.gpsAccuracy != null && Number.isFinite(merged.gpsAccuracy)) {
+      doc.gpsAccuracy = merged.gpsAccuracy
+    }
+    if (merged.gpsCapturedAt) {
+      doc.gpsCapturedAt = merged.gpsCapturedAt
+    }
+  }
+
+  return doc
 }
 
 export async function syncOneRegistro(registro: LocalRegistro): Promise<boolean> {

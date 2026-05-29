@@ -40,6 +40,18 @@ function isValidRegistro(data) {
       'trabajanOtro',
       'desplazamiento',
       'necesidades',
+      'acueductoSatisfaccionServicio',
+      'acueductoCalidadAgua',
+      'acueductoAtencion',
+      'acueductoInformacionComunidad',
+      'acueductoGestionesInfraestructura',
+      'acueductoImportanciaModernizacion',
+      'acueductoGestionAlcantarillado',
+      'acueductoTransparenciaRecursos',
+      'acueductoAspectosMejorar',
+      'acueductoParticipacion',
+      'acueductoCalificacionJunta',
+      'acueductoSugerencias',
       'localId',
       'source',
       'createdAt',
@@ -81,12 +93,71 @@ function isValidRegistro(data) {
     && data.desplazamiento in ['A Pie', 'En Moto', 'En Carro', 'Vehículo de alquiler']
     && data.necesidades is list
     && data.necesidades.size() <= 20
+    && acueductoOptionalEnum(data.acueductoSatisfaccionServicio, [
+      'Muy satisfecho', 'Satisfecho', 'Regular', 'Insatisfecho', 'Muy insatisfecho'
+    ])
+    && acueductoOptionalEnum(data.acueductoCalidadAgua, [
+      'Excelente', 'Buena', 'Regular', 'Deficiente', 'Muy deficiente'
+    ])
+    && acueductoOptionalEnum(data.acueductoAtencion, [
+      'Excelente', 'Buena', 'Regular', 'Deficiente', 'Muy deficiente'
+    ])
+    && acueductoOptionalEnum(data.acueductoInformacionComunidad, [
+      'Siempre', 'Casi siempre', 'Algunas veces', 'Rara vez', 'Nunca'
+    ])
+    && acueductoOptionalEnum(data.acueductoGestionesInfraestructura, [
+      'Excelente', 'Buena', 'Regular', 'Deficiente', 'Muy deficiente'
+    ])
+    && acueductoOptionalEnum(data.acueductoImportanciaModernizacion, [
+      'Muy importante', 'Importante', 'Medianamente importante', 'Poco importante', 'Nada importante'
+    ])
+    && acueductoOptionalEnum(data.acueductoGestionAlcantarillado, [
+      'Excelente', 'Buena', 'Regular', 'Deficiente', 'Muy deficiente'
+    ])
+    && acueductoOptionalEnum(data.acueductoTransparenciaRecursos, [
+      'Totalmente de acuerdo', 'De acuerdo', 'Neutral', 'En desacuerdo', 'Totalmente en desacuerdo'
+    ])
+    && data.acueductoAspectosMejorar is list
+    && data.acueductoAspectosMejorar.size() <= 15
+    && acueductoOptionalEnum(data.acueductoParticipacion, [
+      'Sí', 'No', 'Dependiendo de la actividad'
+    ])
+    && data.acueductoCalificacionJunta is int
+    && data.acueductoCalificacionJunta >= 0
+    && data.acueductoCalificacionJunta <= 10
+    && data.acueductoSugerencias is string
+    && data.acueductoSugerencias.size() <= 3000
     && data.localId is string
     && data.localId.size() <= 64
     && data.source == 'pwa-sonsito'
-    && data.createdAt == request.time;
+    && data.createdAt == request.time
+    && optionalGps(data);
 }
 
 function nonNegInt(n) {
   return n is int && n >= 0 && n <= 1000;
+}
+
+function acueductoOptionalEnum(value, allowed) {
+  return value is string
+    && value.size() <= 80
+    && (value.size() == 0 || value in allowed);
+}
+
+function optionalGps(data) {
+  return !('gpsLatitude' in data)
+    || (
+      data.gpsLatitude is number
+      && data.gpsLongitude is number
+      && data.gpsLatitude >= -90
+      && data.gpsLatitude <= 90
+      && data.gpsLongitude >= -180
+      && data.gpsLongitude <= 180
+      && (!('gpsAccuracy' in data)
+        || (data.gpsAccuracy is number
+          && data.gpsAccuracy >= 0
+          && data.gpsAccuracy <= 50000))
+      && (!('gpsCapturedAt' in data)
+        || (data.gpsCapturedAt is string && data.gpsCapturedAt.size() <= 64))
+    );
 }

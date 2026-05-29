@@ -40,6 +40,71 @@ export const NECESIDADES = [
   'Placa huella vía Zanjón Hondo-Sonsito',
 ] as const
 
+export const ACUEDUCTO_SATISFACCION = [
+  'Muy satisfecho',
+  'Satisfecho',
+  'Regular',
+  'Insatisfecho',
+  'Muy insatisfecho',
+] as const
+
+export const ACUEDUCTO_CALIFICACION = [
+  'Excelente',
+  'Buena',
+  'Regular',
+  'Deficiente',
+  'Muy deficiente',
+] as const
+
+export const ACUEDUCTO_FRECUENCIA = [
+  'Siempre',
+  'Casi siempre',
+  'Algunas veces',
+  'Rara vez',
+  'Nunca',
+] as const
+
+export const ACUEDUCTO_IMPORTANCIA = [
+  'Muy importante',
+  'Importante',
+  'Medianamente importante',
+  'Poco importante',
+  'Nada importante',
+] as const
+
+export const ACUEDUCTO_ACUERDO = [
+  'Totalmente de acuerdo',
+  'De acuerdo',
+  'Neutral',
+  'En desacuerdo',
+  'Totalmente en desacuerdo',
+] as const
+
+export const ACUEDUCTO_ASPECTOS_MEJORAR = [
+  'Continuidad del servicio',
+  'Calidad del agua',
+  'Presión del agua',
+  'Atención al usuario',
+  'Comunicación con la comunidad',
+  'Infraestructura del sistema',
+  'Estado de las vías de acceso',
+  'Gestión de proyectos',
+  'Redes de alcantarillado',
+] as const
+
+export const ACUEDUCTO_PARTICIPACION = [
+  'Sí',
+  'No',
+  'Dependiendo de la actividad',
+] as const
+
+export type AcueductoSatisfaccion = (typeof ACUEDUCTO_SATISFACCION)[number]
+export type AcueductoCalificacion = (typeof ACUEDUCTO_CALIFICACION)[number]
+export type AcueductoFrecuencia = (typeof ACUEDUCTO_FRECUENCIA)[number]
+export type AcueductoImportancia = (typeof ACUEDUCTO_IMPORTANCIA)[number]
+export type AcueductoAcuerdo = (typeof ACUEDUCTO_ACUERDO)[number]
+export type AcueductoParticipacion = (typeof ACUEDUCTO_PARTICIPACION)[number]
+
 export type Sector = (typeof SECTORES)[number]
 export type Estrato = (typeof ESTRATOS)[number]
 export type TipoVivienda = (typeof TIPOS_VIVIENDA)[number]
@@ -80,6 +145,23 @@ export interface RegistroPayload {
   desplazamiento: Desplazamiento
   necesidades: string[]
   necesidadesOtro: string
+  acueductoSatisfaccionServicio: AcueductoSatisfaccion | ''
+  acueductoCalidadAgua: AcueductoCalificacion | ''
+  acueductoAtencion: AcueductoCalificacion | ''
+  acueductoInformacionComunidad: AcueductoFrecuencia | ''
+  acueductoGestionesInfraestructura: AcueductoCalificacion | ''
+  acueductoImportanciaModernizacion: AcueductoImportancia | ''
+  acueductoGestionAlcantarillado: AcueductoCalificacion | ''
+  acueductoTransparenciaRecursos: AcueductoAcuerdo | ''
+  acueductoAspectosMejorar: string[]
+  acueductoAspectosMejorarOtro: string
+  acueductoParticipacion: AcueductoParticipacion | ''
+  acueductoCalificacionJunta: number
+  acueductoSugerencias: string
+  gpsLatitude: number | null
+  gpsLongitude: number | null
+  gpsAccuracy: number | null
+  gpsCapturedAt: string | null
 }
 
 export interface LocalRegistro extends RegistroPayload {
@@ -123,6 +205,23 @@ export function emptyRegistroPayload(): RegistroPayload {
     desplazamiento: 'A Pie',
     necesidades: [],
     necesidadesOtro: '',
+    acueductoSatisfaccionServicio: '',
+    acueductoCalidadAgua: '',
+    acueductoAtencion: '',
+    acueductoInformacionComunidad: '',
+    acueductoGestionesInfraestructura: '',
+    acueductoImportanciaModernizacion: '',
+    acueductoGestionAlcantarillado: '',
+    acueductoTransparenciaRecursos: '',
+    acueductoAspectosMejorar: [],
+    acueductoAspectosMejorarOtro: '',
+    acueductoParticipacion: '',
+    acueductoCalificacionJunta: 0,
+    acueductoSugerencias: '',
+    gpsLatitude: null,
+    gpsLongitude: null,
+    gpsAccuracy: null,
+    gpsCapturedAt: null,
   }
 }
 
@@ -153,6 +252,10 @@ export function validateRegistro(data: RegistroPayload): string | null {
   ]
   if (counts.some((n) => n < 0 || !Number.isInteger(n))) {
     return 'Las cantidades deben ser números enteros mayores o iguales a cero.'
+  }
+  const cal = data.acueductoCalificacionJunta
+  if (!Number.isInteger(cal) || cal < 0 || cal > 10) {
+    return 'La calificación a la Junta Directiva debe estar entre 1 y 10, o dejarse en blanco.'
   }
   return null
 }
