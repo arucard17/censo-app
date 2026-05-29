@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import {
   ACUEDUCTO_ACUERDO,
   ACUEDUCTO_ASPECTOS_MEJORAR,
@@ -20,7 +20,7 @@ import {
   validateRegistro,
   type RegistroPayload,
 } from '../types/registro'
-import { captureGpsPosition } from '../lib/geolocation'
+import { captureGpsPosition, type GpsReading } from '../lib/geolocation'
 import {
   ChipMultiSelect,
   ChoiceGroup,
@@ -68,7 +68,22 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
   const [data, setData] = useState<RegistroPayload>(emptyRegistroPayload)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [gpsReading, setGpsReading] = useState<GpsReading | null>(null)
+  const [gpsLoading, setGpsLoading] = useState(true)
   const errorRef = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    setGpsLoading(true)
+    void captureGpsPosition().then((gps) => {
+      if (cancelled) return
+      setGpsReading(gps)
+      setGpsLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const setNum = (name: keyof RegistroPayload, value: number) => {
     setData((d) => ({ ...d, [name]: value }))
@@ -104,17 +119,16 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
     setError(null)
     setSaving(true)
     try {
-      const gps = await captureGpsPosition()
       await onSubmit({
         ...data,
         nombre: data.nombre.trim(),
         email: data.email.trim(),
         celular: data.celular.trim(),
         acueductoSugerencias: data.acueductoSugerencias.trim(),
-        gpsLatitude: gps?.latitude ?? null,
-        gpsLongitude: gps?.longitude ?? null,
-        gpsAccuracy: gps?.accuracy ?? null,
-        gpsCapturedAt: gps?.capturedAt ?? null,
+        gpsLatitude: gpsReading?.latitude ?? null,
+        gpsLongitude: gpsReading?.longitude ?? null,
+        gpsAccuracy: gpsReading?.accuracy ?? null,
+        gpsCapturedAt: gpsReading?.capturedAt ?? null,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar')
@@ -131,6 +145,15 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
       {error && (
         <p ref={errorRef} className="form-error" role="alert">
           {error}
+        </p>
+      )}
+
+      {gpsLoading && (
+        <p className="gps-status muted">Obteniendo ubicación…</p>
+      )}
+      {!gpsLoading && !gpsReading && (
+        <p className="gps-status muted">
+          No se obtuvo la ubicación. El registro se guardará sin coordenadas GPS.
         </p>
       )}
 
@@ -496,7 +519,7 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
           Cancelar
         </button>
         <button type="submit" className="btn btn-primary" disabled={saving}>
-          {saving ? 'Guardando ubicación y registro…' : 'Guardar registro'}
+          {saving ? 'Guardando…' : 'Guardar registro'}
         </button>
       </div>
     </form>

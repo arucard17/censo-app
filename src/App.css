@@ -528,6 +528,11 @@ body {
   margin: 0 0 1rem;
 }
 
+.gps-status {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+}
+
 .app-footer {
   margin-top: 1.5rem;
 }
