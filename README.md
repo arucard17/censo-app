@@ -38,6 +38,7 @@ Abre [http://localhost:8080/censo-app/](http://localhost:8080/censo-app/).
 
 ## Firestore (reglas e índices)
 
+
 ```bash
 npx -y firebase-tools@latest login
 npx -y firebase-tools@latest use vereda-sonsito
