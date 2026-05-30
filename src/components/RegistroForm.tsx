@@ -106,6 +106,8 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
     })
   }
 
+  const showAcueducto = data.serviciosPublicos.includes('Agua')
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const validation = validateRegistro(data)
@@ -465,7 +467,8 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
         </fieldset>
       </CollapsibleSection>
 
-      <CollapsibleSection title="Información Acueducto" defaultOpen={false}>
+      {showAcueducto && (
+      <CollapsibleSection title="Información Acueducto" defaultOpen>
         <ChoiceGroup
           clearable
           legend="1. ¿Qué tan satisfecho se encuentra con el servicio de suministro de agua que presta actualmente el Acueducto de Sonsito?"
@@ -571,8 +574,9 @@ export function RegistroForm({ onSubmit, onCancel }: RegistroFormProps) {
           onChange={(v) => setData({ ...data, acueductoSugerencias: v })}
         />
       </CollapsibleSection>
+      )}
 
-      <div className="form-actions form-sticky-actions">
+      <div className="form-actions">
         <button type="button" className="btn btn-secondary" onClick={onCancel}>
           Cancelar
         </button>
